@@ -1,9 +1,23 @@
+import { content } from '../data/content'
 import type { Message } from '../data/messages'
 
 const btn = 'min-h-10 rounded-lg border border-white/20 px-3 py-2 text-sm hover:border-lime hover:text-lime'
 
 export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (next: Message[]) => void }) {
   const unread = messages.filter((m) => !m.read).length
+
+  const addSample = () => {
+    const sample: Message = {
+      id: `sample-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: 'Alex Rivera',
+      email: 'alex.rivera@example.com',
+      budget: content.budgetOptions[1] ?? '$1k - $5k',
+      message: "Hi Crown! I saw your React portfolio and would love to collaborate on a redesign for our web app's dashboard. Are you available next month?",
+      createdAt: new Date().toISOString(),
+      read: false,
+    }
+    onChange([sample, ...messages])
+  }
 
   const toggleRead = (id: string) =>
     onChange(messages.map((m) => (m.id === id ? { ...m, read: !m.read } : m)))
@@ -26,12 +40,11 @@ export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (
           <span className="font-semibold text-white">{messages.length}</span> total
           {unread > 0 && <> · <span className="font-semibold text-lime">{unread} unread</span></>}
         </p>
-        {messages.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {unread > 0 && <button type="button" className={btn} onClick={markAllRead}>Mark all read</button>}
-            <button type="button" className={btn} onClick={clearAll}>Clear all</button>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className={btn} onClick={addSample}>+ Sample message</button>
+          {unread > 0 && <button type="button" className={btn} onClick={markAllRead}>Mark all read</button>}
+          {messages.length > 0 && <button type="button" className={btn} onClick={clearAll}>Clear all</button>}
+        </div>
       </div>
 
       {messages.length === 0 ? (
