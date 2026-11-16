@@ -102,6 +102,19 @@ export const content = {
 export const asset = (p: string) =>
   p.startsWith('/') && !p.startsWith('//') ? import.meta.env.BASE_URL + p.slice(1) : p
 
+/** Allow only safe link protocols (http, https, mailto, or root-relative). */
+export const safeUrl = (u: string): string => {
+  const s = u.trim()
+  if (!s) return ''
+  if (s.startsWith('/') && !s.startsWith('//')) return s
+  try {
+    const { protocol } = new URL(s)
+    return protocol === 'http:' || protocol === 'https:' || protocol === 'mailto:' ? s : ''
+  } catch {
+    return ''
+  }
+}
+
 export const isTodo = (s: string) => s.includes('TODO')
 
 // ---- Admin overrides (Firestore real-time + localStorage cache) ----

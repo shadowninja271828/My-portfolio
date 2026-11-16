@@ -67,7 +67,7 @@ function Select({ id, label, options, value, onChange }: { id: string; label: st
   )
 }
 
-const input = 'min-h-12 w-full rounded-xl bg-surface-2 px-4 text-sm text-white placeholder:text-muted'
+const input = 'min-h-12 w-full rounded-xl bg-surface-2 px-4 text-base sm:text-sm text-white placeholder:text-muted'
 
 export function ContactForm() {
   const uid = useId()

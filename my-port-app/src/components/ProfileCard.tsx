@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Flame } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { asset, content } from '../data/content'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import { Socials } from './Socials'
@@ -9,6 +9,7 @@ import { T } from './Todo'
 export function ProfileCard() {
   const reduced = useReducedMotion()
   const [imgOk, setImgOk] = useState(true)
+  useEffect(() => { setImgOk(true) }, [content.photo])
   return (
     <aside aria-label="Profile" className="rounded-[24px] bg-white p-5 text-black lg:p-6">
       <div className="flex gap-4 lg:block">

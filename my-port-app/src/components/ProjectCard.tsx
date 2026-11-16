@@ -1,5 +1,5 @@
 import { ExternalLink, GitBranch } from 'lucide-react'
-import { asset, type Project } from '../data/content'
+import { asset, safeUrl, type Project } from '../data/content'
 import { T } from './Todo'
 import { WindowFrame } from './WindowFrame'
 
@@ -20,8 +20,8 @@ export function ProjectCard({ project: p }: { project: Project }) {
           {p.tags.map((t) => <li key={t} className="mono rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] text-white/80">{t}</li>)}
         </ul>
         <div className="mt-auto flex gap-4 pt-4 text-sm">
-          {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noreferrer noopener" className="inline-flex min-h-8 items-center gap-1.5 text-lime hover:underline"><ExternalLink className="size-4" aria-hidden="true" />Live</a>}
-          {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noreferrer noopener" className="inline-flex min-h-8 items-center gap-1.5 text-white hover:text-lime"><GitBranch className="size-4" aria-hidden="true" />Code</a>}
+          {safeUrl(p.liveUrl) && <a href={safeUrl(p.liveUrl)} target="_blank" rel="noreferrer noopener" className="inline-flex min-h-8 items-center gap-1.5 text-lime hover:underline"><ExternalLink className="size-4" aria-hidden="true" />Live</a>}
+          {safeUrl(p.repoUrl) && <a href={safeUrl(p.repoUrl)} target="_blank" rel="noreferrer noopener" className="inline-flex min-h-8 items-center gap-1.5 text-white hover:text-lime"><GitBranch className="size-4" aria-hidden="true" />Code</a>}
         </div>
       </div>
     </article>

@@ -75,14 +75,19 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidSiteContent(data) {
-      return hasRequiredFields(data, [
-               'name', 'role', 'eyebrow', 'typedName', 'shortBio', 'heroParagraph',
-               'photo', 'heroVisual', 'stats', 'services', 'skills', 'projects',
-               'projectsLayout', 'experience', 'education', 'testimonials', 'faq',
-               'budgetOptions', 'socials', 'contactHeadline', 'whatsappBusiness', 'nav'
-             ]) &&
+      let allowedFields = [
+        'name', 'role', 'eyebrow', 'typedName', 'shortBio', 'heroParagraph',
+        'photo', 'heroVisual', 'stats', 'services', 'skills', 'projects',
+        'projectsLayout', 'experience', 'education', 'testimonials', 'faq',
+        'budgetOptions', 'socials', 'contactHeadline', 'whatsappBusiness', 'nav'
+      ];
+      return hasOnlyAllowedFields(data, allowedFields) &&
+             hasRequiredFields(data, allowedFields) &&
              data.name is string &&
-             data.name.size() <= 120;
+             data.name.size() <= 120 &&
+             data.shortBio is string &&
+             data.heroParagraph is string &&
+             data.photo is string;
     }
 
     function isValidMessageCreate(data) {
@@ -99,7 +104,7 @@ service cloud.firestore {
              isValidOptionalString(data, 'whatsapp', 40) &&
              validStringLength(data, 'budget', 0, 100) &&
              validStringLength(data, 'message', 1, 5000) &&
-             data.createdAt is timestamp &&
+             data.createdAt == request.time &&
              data.read == false;
     }
 

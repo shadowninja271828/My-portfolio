@@ -1,5 +1,5 @@
 import { AtSign, Camera, GitBranch, Link2, Mail, Play, type LucideIcon } from 'lucide-react'
-import { content } from '../data/content'
+import { content, safeUrl } from '../data/content'
 
 const META: Record<string, { Icon: LucideIcon; label: string }> = {
   github: { Icon: GitBranch, label: 'GitHub' },
@@ -19,7 +19,8 @@ export function Socials({ variant = 'orange', max = 6 }: { variant?: 'orange' | 
     <ul className="flex flex-wrap gap-2">
       {entries.map(([k, v]) => {
         const { Icon, label } = META[k]
-        const href = k === 'email' && !v.startsWith('mailto:') ? `mailto:${v}` : v
+        const href = safeUrl(k === 'email' && !v.startsWith('mailto:') ? `mailto:${v}` : v)
+        if (!href) return null
         return (
           <li key={k}>
             <a href={href} aria-label={label} target={k === 'email' ? undefined : '_blank'} rel="noreferrer noopener"
