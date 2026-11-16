@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { asset, content, defaultContent, resetContent, saveContent, type Content } from '../data/content'
+import { loadMessages, saveMessages, type Message } from '../data/messages'
+import { Inbox } from './Inbox'
 
 // FRONTEND-ONLY admin. The passcode gate is a convenience, NOT security:
 // everything lives in this browser's localStorage and anyone can read the bundle.
@@ -78,12 +80,14 @@ function List<T>({ title, items, onChange, make, render }: {
 const csv = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean)
 const lines = (s: string) => s.split('\n').filter((x) => x.trim())
 
-const TABS = ['Profile', 'Stats', 'Services', 'Projects', 'Skills', 'Experience', 'Education', 'Testimonials', 'FAQ', 'Socials', 'Form', 'Raw JSON'] as const
+const TABS = ['Messages', 'Profile', 'Stats', 'Services', 'Projects', 'Skills', 'Experience', 'Education', 'Testimonials', 'FAQ', 'Socials', 'Form', 'Raw JSON'] as const
 type Tab = (typeof TABS)[number]
 
 function Panel() {
   const [draft, setDraft] = useState<Content>(() => JSON.parse(JSON.stringify(content)))
-  const [tab, setTab] = useState<Tab>('Profile')
+  const [messages, setMessages] = useState<Message[]>(loadMessages)
+  const unread = messages.filter((m) => !m.read).length
+  const [tab, setTab] = useState<Tab>('Messages')
   const [saved, setSaved] = useState(false)
   const [json, setJson] = useState('')
   const [jsonErr, setJsonErr] = useState('')
@@ -121,13 +125,19 @@ function Panel() {
               <li key={t}>
                 <button onClick={() => { setTab(t); if (t === 'Raw JSON') { setJson(JSON.stringify(draft, null, 2)); setJsonErr('') } }}
                   aria-current={tab === t}
-                  className={`min-h-10 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm md:w-full ${tab === t ? 'bg-lime text-black' : 'bg-surface hover:text-lime'}`}>{t}</button>
+                  className={`min-h-10 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm md:w-full ${tab === t ? 'bg-lime text-black' : 'bg-surface hover:text-lime'}`}>
+                  {t}{t === 'Messages' && unread > 0 ? ` (${unread})` : ''}
+                </button>
               </li>
             ))}
           </ul>
         </nav>
 
         <section aria-label={tab} className="min-w-0 space-y-4">
+          {tab === 'Messages' && (
+            <Inbox messages={messages} onChange={(next) => { setMessages(next); saveMessages(next) }} />
+          )}
+
           {tab === 'Profile' && (
             <div className="grid gap-3 md:grid-cols-2">
               <Field label="Name" value={draft.name} onChange={(v) => up('name', v)} />

@@ -1,6 +1,7 @@
 import { Check, ChevronDown } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { content } from '../data/content'
+import { addMessage } from '../data/messages'
 import { Reveal } from './Reveal'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
@@ -89,7 +90,7 @@ export function ContactForm() {
     setErrors(e)
     if (Object.keys(e).length) return
     setStatus('submitting')
-    try { await send(v); setStatus('success'); setV({ name: '', email: '', budget: '', message: '' }) }
+    try { await send(v); addMessage(v); setStatus('success'); setV({ name: '', email: '', budget: '', message: '' }) }
     catch { setStatus('error') }
   }
 
