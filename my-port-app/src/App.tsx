@@ -15,9 +15,9 @@ import { Timeline } from './components/Timeline'
 
 function Section({ id, index, title, children }: { id: string; index: string; title: string; children: ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className="mt-24">
+    <section id={id} aria-labelledby={`${id}-h`} className="mt-14 md:mt-24">
       <Reveal>
-        <h2 id={`${id}-h`} className="pixel mb-6 text-sm text-lime">{index} {title.toUpperCase()}</h2>
+        <h2 id={`${id}-h`} className="pixel mb-4 md:mb-6 text-sm text-lime">{index} {title.toUpperCase()}</h2>
       </Reveal>
       {children}
     </section>
@@ -38,7 +38,7 @@ export default function App() {
     <>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-lime focus:px-3 focus:py-2 focus:text-black">Skip to content</a>
       <FloatingNav ids={navIds} />
-      <div className="mx-auto grid max-w-site gap-8 px-4 pb-10 pt-24 sm:px-8 lg:pt-8 xl:grid-cols-[430px_1fr] xl:gap-12">
+      <div className="mx-auto grid max-w-site gap-6 md:gap-8 px-4 pb-8 md:pb-10 pt-20 md:pt-24 sm:px-8 lg:pt-8 xl:grid-cols-[430px_1fr] xl:gap-12">
         <div className="xl:sticky xl:top-6 xl:self-start xl:pt-16">
           <ProfileCard />
         </div>

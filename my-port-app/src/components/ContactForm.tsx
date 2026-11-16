@@ -104,9 +104,9 @@ export function ContactForm() {
   const waDigits = content.whatsappBusiness.replace(/\D/g, '')
 
   return (
-    <section id="contact" aria-labelledby="contact-h" className="mt-28">
+    <section id="contact" aria-labelledby="contact-h" className="mt-14 md:mt-28">
       <Reveal>
-        <h2 id="contact-h" className="display text-[clamp(2.5rem,6vw,5.5rem)]">
+        <h2 id="contact-h" className="display text-[clamp(2rem,6vw,5.5rem)]">
           <span className="block text-white">{content.contactHeadline[0]}</span>
           <span className="block text-[#4a4947]">{content.contactHeadline[1]}</span>
         </h2>
@@ -115,7 +115,7 @@ export function ContactForm() {
             href={`https://wa.me/${waDigits}`}
             target="_blank"
             rel="noreferrer noopener"
-            className="pixel-btn mt-6 inline-flex min-h-12 items-center gap-2.5 rounded-xl bg-lime px-5 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+            className="pixel-btn mt-4 md:mt-6 inline-flex min-h-11 md:min-h-12 items-center gap-2.5 rounded-xl bg-lime px-4 md:px-5 py-2.5 md:py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
           >
             <MessageCircle className="size-4" aria-hidden="true" />
             WhatsApp Business ({content.whatsappBusiness})
@@ -123,7 +123,7 @@ export function ContactForm() {
         )}
       </Reveal>
       <Reveal delay={0.1}>
-        <form onSubmit={submit} noValidate className="mt-10 grid gap-5 md:grid-cols-2" aria-busy={status === 'submitting'}>
+        <form onSubmit={submit} noValidate className="mt-6 md:mt-10 grid gap-3.5 md:gap-5 md:grid-cols-2" aria-busy={status === 'submitting'}>
           <div>
             <label htmlFor={`${uid}n`} className="mb-2 block text-sm font-medium">Name</label>
             <input id={`${uid}n`} className={input} placeholder="Your name" autoComplete="name" value={v.name} aria-invalid={!!errors.name} aria-describedby={errors.name ? `${uid}n-e` : undefined}

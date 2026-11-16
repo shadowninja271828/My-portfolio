@@ -17,9 +17,9 @@ const Peaks = () => (
 
 export function BentoGrid() {
   return (
-    <section id="services" aria-labelledby="services-h" className="mt-24">
-      <h2 id="services-h" className="pixel mb-6 text-sm text-lime">01 WHAT I BUILD</h2>
-      <div className="grid gap-4 md:grid-cols-2">
+    <section id="services" aria-labelledby="services-h" className="mt-14 md:mt-24">
+      <h2 id="services-h" className="pixel mb-4 md:mb-6 text-sm text-lime">01 WHAT I BUILD</h2>
+      <div className="grid gap-3 md:gap-4 md:grid-cols-2">
         {content.services.map((s, i) => {
           const Icon = ICON_MAP[s.icon]
           const orange = i % 2 === 0
@@ -27,14 +27,14 @@ export function BentoGrid() {
             <Reveal key={s.title} delay={i * 0.08}>
               <motion.article
                 whileHover="hover"
-                className={`relative h-full min-h-56 overflow-hidden rounded-[24px] p-7 text-black ${orange ? 'bg-orange' : 'bg-lime'}`}
+                className={`relative h-full md:min-h-56 overflow-hidden rounded-[20px] md:rounded-[24px] p-5 md:p-7 text-black ${orange ? 'bg-orange' : 'bg-lime'}`}
               >
                 {orange ? <Topo /> : <Peaks />}
-                <motion.div variants={{ hover: { rotate: -8 } }} className="relative mb-12 inline-grid size-12 place-items-center rounded-xl border-2 border-black">
-                  <Icon className="size-6" aria-hidden="true" />
+                <motion.div variants={{ hover: { rotate: -8 } }} className="relative mb-4 md:mb-12 inline-grid size-10 md:size-12 place-items-center rounded-xl border-2 border-black">
+                  <Icon className="size-5 md:size-6" aria-hidden="true" />
                 </motion.div>
-                <h3 className="relative text-2xl font-extrabold uppercase tracking-tight">{s.title}</h3>
-                <p className="relative mt-2 max-w-sm text-sm font-medium"><T>{s.text}</T></p>
+                <h3 className="relative text-xl md:text-2xl font-extrabold uppercase tracking-tight">{s.title}</h3>
+                <p className="relative mt-1.5 md:mt-2 max-w-sm text-sm font-medium"><T>{s.text}</T></p>
               </motion.article>
             </Reveal>
           )

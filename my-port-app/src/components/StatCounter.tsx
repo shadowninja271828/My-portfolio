@@ -20,11 +20,11 @@ export function StatCounter({ value, suffix, label, icon }: Props) {
       ref={ref}
       onViewportEnter={() => setSeen(true)}
       viewport={{ once: true }}
-      className="rounded-2xl border border-white/10 p-4"
+      className="rounded-2xl border border-white/10 p-3 md:p-4"
     >
-      <Icon className="mb-3 size-4 text-orange" aria-hidden="true" />
-      <p className="pixel text-3xl text-white sm:text-4xl">{n}{suffix}</p>
-      <p className="mono mt-2 text-[11px] uppercase tracking-wider text-muted">{label}</p>
+      <Icon className="mb-2 md:mb-3 size-4 text-orange" aria-hidden="true" />
+      <p className="pixel text-xl md:text-3xl sm:text-4xl text-white">{n}{suffix}</p>
+      <p className="mono mt-1.5 md:mt-2 text-[10px] md:text-[11px] uppercase tracking-wider text-muted">{label}</p>
     </motion.div>
   )
 }

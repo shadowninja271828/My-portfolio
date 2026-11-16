@@ -11,9 +11,9 @@ export function ProfileCard() {
   const [imgOk, setImgOk] = useState(true)
   useEffect(() => { setImgOk(true) }, [content.photo])
   return (
-    <aside aria-label="Profile" className="rounded-[24px] bg-white p-5 text-black lg:p-6">
-      <div className="flex gap-4 lg:block">
-        <div className="relative w-32 shrink-0 lg:w-full">
+    <aside aria-label="Profile" className="rounded-[20px] md:rounded-[24px] bg-white p-4 text-black md:p-5 lg:p-6">
+      <div className="flex gap-3.5 md:gap-4 lg:block">
+        <div className="relative w-24 shrink-0 md:w-32 lg:w-full">
           <svg className="absolute -inset-3 size-[calc(100%+24px)]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <motion.path
               d="M5 90 C 0 30, 40 -5, 95 15"
@@ -37,9 +37,9 @@ export function ProfileCard() {
           </motion.span>
         </div>
         <div className="min-w-0 self-center lg:mt-6 lg:self-auto">
-          <h2 className="text-2xl font-bold text-black">{content.name}</h2>
-          <p className="mt-1 text-sm text-neutral-600"><T>{content.shortBio}</T></p>
-          <div className="mt-4"><Socials variant="orange" max={4} /></div>
+          <h2 className="text-xl md:text-2xl font-bold text-black">{content.name}</h2>
+          <p className="mt-1 text-xs md:text-sm text-neutral-600"><T>{content.shortBio}</T></p>
+          <div className="mt-3 md:mt-4"><Socials variant="orange" max={4} /></div>
         </div>
       </div>
     </aside>

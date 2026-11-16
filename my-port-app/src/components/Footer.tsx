@@ -5,8 +5,8 @@ import { Socials } from './Socials'
 export function Footer() {
   const links = content.nav
   return (
-    <footer className="mt-28 border-t border-white/10 py-10">
-      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+    <footer className="mt-14 md:mt-28 border-t border-white/10 py-7 md:py-10">
+      <div className="flex flex-col items-start justify-between gap-4 md:gap-6 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
           <PixelCrown size={28} />
           <span className="pixel text-sm">{content.name.toUpperCase()}</span>
