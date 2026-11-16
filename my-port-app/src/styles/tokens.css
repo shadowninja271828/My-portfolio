@@ -1,0 +1,25 @@
+:root {
+  --bg: #141312;
+  --surface: #1c1b1a;
+  --surface-2: #2a2928;
+  --text: #ffffff;
+  --muted: #9a9997; /* lightened from #8b8a88 for AA contrast on --bg */
+  --ghost: #2b2a29;
+  --orange: #f4693a;
+  --lime: #c6ff3d;
+  --card-white: #ffffff;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-muted: var(--muted);
+  --color-ghost: var(--ghost);
+  --color-orange: var(--orange);
+  --color-lime: var(--lime);
+  --font-sans: 'Poppins', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-pixel: 'Silkscreen', 'Press Start 2P', monospace;
+  --radius-card: 24px;
+}

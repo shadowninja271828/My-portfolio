@@ -1,16 +1,35 @@
-# React + Vite
+# Crown: React Developer Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite + React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + lucide-react. Fonts are self-hosted via Fontsource.
 
-Currently, two official plugins are available:
+```bash
+npm install
+npm run dev      # dev server
+npm run build    # type-check + production build
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Editing content
+All copy lives in [`src/data/content.ts`](src/data/content.ts). Anything containing `TODO` is a placeholder and shows a dashed orange marker in dev. Empty `experience`, `education`, `testimonials`, `faq` arrays hide their sections; empty `socials` entries are not rendered.
 
-## React Compiler
+## Swap the photo
+Drop a ~3:4 portrait at `public/assets/crown.jpg` (or change `photo` in `content.ts`). A placeholder shows if the file is missing.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Swap projects
+Edit `projects` in `content.ts`. Put 16:10 `.webp` screenshots in `public/assets/projects/` and set `image: '/assets/projects/foo.webp'`. Set `projectsLayout: 'carousel'` for the swipe/keyboard carousel instead of the grid.
 
-## Expanding the ESLint configuration
+## Colors and fonts
+Tokens are CSS variables in [`src/styles/tokens.css`](src/styles/tokens.css) (`--orange`, `--lime`, `--bg`, ...) and are exposed to Tailwind via `@theme`. Fonts are imported in `src/main.tsx`.
+Note: the hero/section "ghost" text uses `#4a4947` rather than `--ghost` (`#2b2a29`), which is nearly invisible on `--bg`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Pixel scene
+`heroVisual` in `content.ts`: `'pixelScene'` or `'none'`. To replace the art, edit `src/components/PixelScene.tsx` (a 32x24 SVG grid), or swap it for an `<img>`.
+
+## Contact form backend
+`src/components/ContactForm.tsx` picks a backend from `.env`:
+- Formspree: `VITE_FORMSPREE_ID=xxxx`
+- EmailJS: `VITE_EMAILJS_SERVICE`, `VITE_EMAILJS_TEMPLATE`, `VITE_EMAILJS_KEY`
+- Neither set: a mock send (logs to the console) so the UI still works.
+
+## Notes
+- lucide-react v1 has no brand icons, so socials use generic icons (see `Socials.tsx`).
+- TODO: OG image (`index.html`).
