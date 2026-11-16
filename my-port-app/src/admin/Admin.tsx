@@ -262,6 +262,7 @@ function Panel() {
             <div className="space-y-3">
               <Field label="Contact headline (white)" value={draft.contactHeadline[0]} onChange={(v) => up('contactHeadline', [v, draft.contactHeadline[1]])} />
               <Field label="Contact headline (ghost)" value={draft.contactHeadline[1]} onChange={(v) => up('contactHeadline', [draft.contactHeadline[0], v])} />
+              <Field label="WhatsApp Business number" value={draft.whatsappBusiness} onChange={(v) => up('whatsappBusiness', v)} />
               <Field area label="Budget options (one per line)" value={draft.budgetOptions.join('\n')} onChange={(v) => up('budgetOptions', lines(v))} />
             </div>
           )}

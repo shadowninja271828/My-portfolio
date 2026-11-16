@@ -85,6 +85,7 @@ export const content = {
 
   // Form backend: set VITE_FORMSPREE_ID or EmailJS keys in .env; otherwise a mock is used.
   contactHeadline: ["LET'S WORK", 'TOGETHER'] as [string, string],
+  whatsappBusiness: '+91 7074988045',
 
   nav: [
     { id: 'home', label: 'Home' },

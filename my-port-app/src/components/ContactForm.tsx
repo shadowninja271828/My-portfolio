@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, MessageCircle } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { content } from '../data/content'
 import { addMessage } from '../data/messages'
@@ -96,6 +96,8 @@ export function ContactForm() {
 
   const err = (id: string, m?: string) => m && <p id={`${id}-e`} role="alert" className="mt-1 text-xs text-orange">{m}</p>
 
+  const waDigits = content.whatsappBusiness.replace(/\D/g, '')
+
   return (
     <section id="contact" aria-labelledby="contact-h" className="mt-28">
       <Reveal>
@@ -103,6 +105,17 @@ export function ContactForm() {
           <span className="block text-white">{content.contactHeadline[0]}</span>
           <span className="block text-[#4a4947]">{content.contactHeadline[1]}</span>
         </h2>
+        {waDigits && (
+          <a
+            href={`https://wa.me/${waDigits}`}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="pixel-btn mt-6 inline-flex min-h-12 items-center gap-2.5 rounded-xl bg-lime px-5 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            <MessageCircle className="size-4" aria-hidden="true" />
+            WhatsApp Business ({content.whatsappBusiness})
+          </a>
+        )}
       </Reveal>
       <Reveal delay={0.1}>
         <form onSubmit={submit} noValidate className="mt-10 grid gap-5 md:grid-cols-2" aria-busy={status === 'submitting'}>
