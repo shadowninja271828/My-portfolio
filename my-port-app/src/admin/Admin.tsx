@@ -36,17 +36,79 @@ function NumField({ label, value, onChange }: { label: string; value: number; on
   )
 }
 
+const CLD_CLOUD_KEY = 'crown-cld-cloud'
+const CLD_PRESET_KEY = 'crown-cld-preset'
+
+function getCloudinaryConfig() {
+  const cloud = (import.meta.env.VITE_CLOUDINARY_CLOUD as string | undefined) || localStorage.getItem(CLD_CLOUD_KEY) || ''
+  const preset = (import.meta.env.VITE_CLOUDINARY_PRESET as string | undefined) || localStorage.getItem(CLD_PRESET_KEY) || ''
+  return { cloud: cloud.trim(), preset: preset.trim() }
+}
+
+async function compressToWebp(file: File, maxW = 1000, quality = 0.82): Promise<string> {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const el = new Image()
+      el.onload = () => res(el)
+      el.onerror = () => rej(new Error('Could not read image'))
+      el.src = url
+    })
+    const scale = Math.min(1, maxW / img.width)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(img.width * scale)
+    canvas.height = Math.round(img.height * scale)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Canvas unavailable')
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    return canvas.toDataURL('image/webp', quality)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+async function uploadImage(file: File): Promise<{ url: string; via: 'cloudinary' | 'compressed' }> {
+  const { cloud, preset } = getCloudinaryConfig()
+  if (cloud && preset) {
+    const form = new FormData()
+    form.append('file', file)
+    form.append('upload_preset', preset)
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloud)}/image/upload`, {
+      method: 'POST',
+      body: form,
+    })
+    const data = await res.json() as { secure_url?: string; error?: { message?: string } }
+    if (!res.ok || !data.secure_url) {
+      throw new Error(data.error?.message || 'Cloudinary upload failed')
+    }
+    return { url: data.secure_url, via: 'cloudinary' }
+  }
+  return { url: await compressToWebp(file), via: 'compressed' }
+}
+
 function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const pick = (f?: File) => {
+  const [uploading, setUploading] = useState(false)
+  const [note, setNote] = useState('')
+  const pick = async (f?: File) => {
     if (!f) return
-    const r = new FileReader()
-    r.onload = () => onChange(String(r.result))
-    r.readAsDataURL(f)
+    setUploading(true)
+    setNote('')
+    try {
+      const { url, via } = await uploadImage(f)
+      onChange(url)
+      setNote(via === 'cloudinary' ? 'Uploaded to Cloudinary ✓ (press Save to publish)' : 'Compressed to WebP locally ✓ (press Save to publish)')
+    } catch (e) {
+      setNote(`Upload error: ${(e as Error).message}`)
+    } finally {
+      setUploading(false)
+    }
   }
   return (
     <div className="text-sm sm:text-xs text-muted">
       <Field label={`${label} (URL or upload)`} value={value.startsWith('data:') ? '(uploaded image)' : value} onChange={onChange} />
-      <input type="file" accept="image/*" className="mt-2 block w-full text-sm sm:text-xs" aria-label={`Upload ${label}`} onChange={(e) => pick(e.target.files?.[0])} />
+      <input type="file" accept="image/*" disabled={uploading} className="mt-2 block w-full text-sm sm:text-xs" aria-label={`Upload ${label}`} onChange={(e) => void pick(e.target.files?.[0])} />
+      {uploading && <p className="mt-1 text-xs text-lime">Uploading…</p>}
+      {note && <p className={`mt-1 text-xs ${note.startsWith('Upload error') ? 'text-orange' : 'text-lime'}`}>{note}</p>}
       {value && <img src={asset(value)} alt="" className="mt-2 h-20 rounded object-cover" />}
     </div>
   )
@@ -97,6 +159,8 @@ function Panel({ user }: { user: User }) {
   const [saving, setSaving] = useState(false)
   const [json, setJson] = useState('')
   const [jsonErr, setJsonErr] = useState('')
+  const [cldCloud, setCldCloud] = useState(() => localStorage.getItem(CLD_CLOUD_KEY) ?? '')
+  const [cldPreset, setCldPreset] = useState(() => localStorage.getItem(CLD_PRESET_KEY) ?? '')
   const up = <K extends keyof Content>(k: K, v: Content[K]) => { setDraft({ ...draft, [k]: v }); setStatus('') }
 
   useEffect(() => {
@@ -192,6 +256,14 @@ function Panel({ user }: { user: User }) {
               <div className="md:col-span-2"><Field label="Short bio (profile card)" value={draft.shortBio} onChange={(v) => up('shortBio', v)} /></div>
               <div className="md:col-span-2"><Field area label="Hero paragraph" value={draft.heroParagraph} onChange={(v) => up('heroParagraph', v)} /></div>
               <div className="md:col-span-2"><ImageField label="Photo" value={draft.photo} onChange={(v) => up('photo', v)} /></div>
+              <div className="md:col-span-2 rounded-2xl border border-white/10 bg-surface p-4 space-y-3">
+                <p className="pixel text-xs text-lime">CLOUDINARY IMAGE UPLOAD (OPTIONAL)</p>
+                <p className="text-xs text-muted">Add your Cloudinary Cloud Name &amp; Unsigned Upload Preset to host uploaded images on Cloudinary CDN (otherwise images are auto-compressed locally).</p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Field label="Cloud Name" value={cldCloud} onChange={(v) => { setCldCloud(v); localStorage.setItem(CLD_CLOUD_KEY, v) }} />
+                  <Field label="Unsigned Upload Preset" value={cldPreset} onChange={(v) => { setCldPreset(v); localStorage.setItem(CLD_PRESET_KEY, v) }} />
+                </div>
+              </div>
               <label className="text-xs text-muted">Hero visual
                 <select className={`${inputCls} mt-1`} value={draft.heroVisual} onChange={(e) => up('heroVisual', e.target.value as Content['heroVisual'])}>
                   <option value="pixelScene">pixelScene</option><option value="none">none</option>
