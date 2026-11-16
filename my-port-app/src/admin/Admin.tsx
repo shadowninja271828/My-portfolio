@@ -6,13 +6,13 @@ import { asset, content, defaultContent, resetContent, saveContent, type Content
 const PASS_KEY = 'crown-admin-pass'
 const SESSION_KEY = 'crown-admin-session'
 
-const inputCls = 'w-full rounded-lg bg-surface-2 px-3 py-2 text-sm text-white placeholder:text-muted'
-const btn = 'rounded-lg border border-white/20 px-3 py-2 text-sm hover:border-lime hover:text-lime'
+const inputCls = 'w-full rounded-lg bg-surface-2 px-3 py-2.5 text-base sm:py-2 sm:text-sm text-white placeholder:text-muted'
+const btn = 'min-h-10 rounded-lg border border-white/20 px-3.5 py-2 text-sm hover:border-lime hover:text-lime'
 
 function Field({ label, value, onChange, area }: { label: string; value: string; onChange: (v: string) => void; area?: boolean }) {
   return (
-    <label className="block text-xs text-muted">
-      <span className="mb-1 block">{label}</span>
+    <label className="block text-sm sm:text-xs text-muted">
+      <span className="mb-1.5 block">{label}</span>
       {area
         ? <textarea rows={3} className={inputCls} value={value} onChange={(e) => onChange(e.target.value)} />
         : <input className={inputCls} value={value} onChange={(e) => onChange(e.target.value)} />}
@@ -22,8 +22,8 @@ function Field({ label, value, onChange, area }: { label: string; value: string;
 
 function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
-    <label className="block text-xs text-muted">
-      <span className="mb-1 block">{label}</span>
+    <label className="block text-sm sm:text-xs text-muted">
+      <span className="mb-1.5 block">{label}</span>
       <input type="number" className={inputCls} value={value} onChange={(e) => onChange(Number(e.target.value))} />
     </label>
   )
@@ -37,9 +37,9 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
     r.readAsDataURL(f)
   }
   return (
-    <div className="text-xs text-muted">
+    <div className="text-sm sm:text-xs text-muted">
       <Field label={`${label} (URL or upload)`} value={value.startsWith('data:') ? '(uploaded image)' : value} onChange={onChange} />
-      <input type="file" accept="image/*" className="mt-2 block text-xs" aria-label={`Upload ${label}`} onChange={(e) => pick(e.target.files?.[0])} />
+      <input type="file" accept="image/*" className="mt-2 block w-full text-sm sm:text-xs" aria-label={`Upload ${label}`} onChange={(e) => pick(e.target.files?.[0])} />
       {value && <img src={asset(value)} alt="" className="mt-2 h-20 rounded object-cover" />}
     </div>
   )
@@ -59,9 +59,9 @@ function List<T>({ title, items, onChange, make, render }: {
     <div className="space-y-4">
       {items.map((it, i) => (
         <div key={i} className="space-y-3 rounded-2xl border border-white/10 bg-surface p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="pixel text-xs text-orange">{title} {String(i + 1).padStart(2, '0')}</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button className={btn} onClick={() => move(i, -1)} aria-label="Move up">↑</button>
               <button className={btn} onClick={() => move(i, 1)} aria-label="Move down">↓</button>
               <button className={btn} onClick={() => onChange(items.filter((_, n) => n !== i))}>Delete</button>
@@ -101,27 +101,27 @@ function Panel() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-6xl overflow-x-hidden px-4 py-6 sm:py-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="pixel text-lg text-lime">ADMIN_</h1>
         <div className="flex flex-wrap items-center gap-2">
           {saved && <span role="status" className="text-sm text-lime">Saved ✓</span>}
-          <a href={import.meta.env.BASE_URL} className={btn}>View site</a>
+          <a href={import.meta.env.BASE_URL} className={`inline-flex items-center ${btn}`}>View site</a>
           <button className={btn} onClick={exportJson}>Export</button>
           <button className={btn} onClick={reset}>Reset</button>
           <button className={btn} onClick={() => { sessionStorage.removeItem(SESSION_KEY); location.reload() }}>Log out</button>
-          <button className="pixel-btn rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-black" onClick={save}>Save</button>
+          <button className="pixel-btn min-h-10 rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-black" onClick={save}>Save</button>
         </div>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-[180px_1fr]">
-        <nav aria-label="Admin sections">
-          <ul className="flex gap-2 overflow-x-auto md:flex-col">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[180px_1fr]">
+        <nav aria-label="Admin sections" className="min-w-0">
+          <ul className="flex flex-wrap gap-2 md:flex-col">
             {TABS.map((t) => (
               <li key={t}>
                 <button onClick={() => { setTab(t); if (t === 'Raw JSON') { setJson(JSON.stringify(draft, null, 2)); setJsonErr('') } }}
                   aria-current={tab === t}
-                  className={`w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm ${tab === t ? 'bg-lime text-black' : 'bg-surface hover:text-lime'}`}>{t}</button>
+                  className={`min-h-10 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm md:w-full ${tab === t ? 'bg-lime text-black' : 'bg-surface hover:text-lime'}`}>{t}</button>
               </li>
             ))}
           </ul>
@@ -258,7 +258,7 @@ function Panel() {
 
           {tab === 'Raw JSON' && (
             <div className="space-y-3">
-              <textarea className={`${inputCls} mono h-[28rem]`} spellCheck={false} aria-label="Raw JSON" value={json} onChange={(e) => setJson(e.target.value)} />
+              <textarea className={`${inputCls} mono h-72 sm:h-[28rem]`} spellCheck={false} aria-label="Raw JSON" value={json} onChange={(e) => setJson(e.target.value)} />
               {jsonErr && <p role="alert" className="text-sm text-orange">{jsonErr}</p>}
               <button className={btn} onClick={() => {
                 try { setDraft(JSON.parse(json)); setSaved(false); setJsonErr('Applied to draft. Press Save to publish.') }
@@ -301,13 +301,13 @@ export default function Admin() {
       <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-[24px] border border-white/10 bg-surface p-6">
         <h1 className="pixel text-lg text-lime">ADMIN_</h1>
         <p className="text-sm text-muted">{hasPass ? 'Enter your passcode.' : 'First visit: choose a passcode for this browser.'}</p>
-        <label className="block text-xs text-muted">
-          <span className="mb-1 block">Passcode</span>
+        <label className="block text-sm sm:text-xs text-muted">
+          <span className="mb-1.5 block">Passcode</span>
           <input type="password" autoFocus className={inputCls} value={pass} onChange={(e) => { setPass(e.target.value); setErr('') }} />
         </label>
         {err && <p role="alert" className="text-sm text-orange">{err}</p>}
-        <button className="pixel-btn w-full rounded-lg bg-lime py-2 text-sm font-semibold text-black">{hasPass ? 'Unlock' : 'Set passcode'}</button>
-        <p className="text-xs text-muted">Frontend-only gate; not real security. <a className="text-lime underline" href={import.meta.env.BASE_URL}>Back to site</a></p>
+        <button className="pixel-btn min-h-10 w-full rounded-lg bg-lime py-2 text-sm font-semibold text-black">{hasPass ? 'Unlock' : 'Set passcode'}</button>
+        <p className="text-sm sm:text-xs text-muted">Frontend-only gate; not real security. <a className="text-lime underline" href={import.meta.env.BASE_URL}>Back to site</a></p>
       </form>
     </main>
   )
