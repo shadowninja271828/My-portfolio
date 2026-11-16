@@ -60,7 +60,7 @@ function List<T>({ title, items, onChange, make, render }: {
   const move = (i: number, d: number) => {
     const j = i + d
     if (j < 0 || j >= items.length) return
-    const c = [...items]; [c[i], c[j]] = [c[j], c[i]]; onChange(c)
+    const c = [...items];[c[i], c[j]] = [c[j], c[i]]; onChange(c)
   }
   return (
     <div className="space-y-4">
