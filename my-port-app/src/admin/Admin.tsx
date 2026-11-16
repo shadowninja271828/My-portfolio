@@ -1,12 +1,17 @@
-import { useState, type ReactNode } from 'react'
-import { asset, content, defaultContent, resetContent, saveContent, type Content } from '../data/content'
-import { loadMessages, saveMessages, type Message } from '../data/messages'
+import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
+import { useEffect, useState, type ReactNode } from 'react'
+import {
+  asset,
+  content,
+  defaultContent,
+  resetContentRemote,
+  saveContentRemote,
+  subscribeContent,
+  type Content,
+} from '../data/content'
+import { subscribeMessages, type Message } from '../data/messages'
+import { ADMIN_EMAIL, auth, googleProvider } from '../lib/firebase'
 import { Inbox } from './Inbox'
-
-// FRONTEND-ONLY admin. The passcode gate is a convenience, NOT security:
-// everything lives in this browser's localStorage and anyone can read the bundle.
-const PASS_KEY = 'crown-admin-pass'
-const SESSION_KEY = 'crown-admin-session'
 
 const inputCls = 'w-full rounded-lg bg-surface-2 px-3 py-2.5 text-base sm:py-2 sm:text-sm text-white placeholder:text-muted'
 const btn = 'min-h-10 rounded-lg border border-white/20 px-3.5 py-2 text-sm hover:border-lime hover:text-lime'
@@ -83,20 +88,54 @@ const lines = (s: string) => s.split('\n').filter((x) => x.trim())
 const TABS = ['Messages', 'Profile', 'Stats', 'Services', 'Projects', 'Skills', 'Experience', 'Education', 'Testimonials', 'FAQ', 'Socials', 'Form', 'Raw JSON'] as const
 type Tab = (typeof TABS)[number]
 
-function Panel() {
+function Panel({ user }: { user: User }) {
   const [draft, setDraft] = useState<Content>(() => JSON.parse(JSON.stringify(content)))
-  const [messages, setMessages] = useState<Message[]>(loadMessages)
+  const [messages, setMessages] = useState<Message[]>([])
   const unread = messages.filter((m) => !m.read).length
   const [tab, setTab] = useState<Tab>('Messages')
-  const [saved, setSaved] = useState(false)
+  const [status, setStatus] = useState<string>('')
+  const [saving, setSaving] = useState(false)
   const [json, setJson] = useState('')
   const [jsonErr, setJsonErr] = useState('')
-  const up = <K extends keyof Content>(k: K, v: Content[K]) => { setDraft({ ...draft, [k]: v }); setSaved(false) }
+  const up = <K extends keyof Content>(k: K, v: Content[K]) => { setDraft({ ...draft, [k]: v }); setStatus('') }
 
-  const save = () => { saveContent(draft); setSaved(true) }
-  const reset = () => {
-    if (!confirm('Discard all admin edits and restore defaults?')) return
-    resetContent(); setDraft(JSON.parse(JSON.stringify(defaultContent))); setSaved(true)
+  useEffect(() => {
+    const unsubContent = subscribeContent((next) => {
+      setDraft(JSON.parse(JSON.stringify(next)))
+    })
+    const unsubMessages = subscribeMessages(
+      (msgs) => setMessages(msgs),
+      (err) => setStatus(`Messages sync error: ${err.message}`),
+    )
+    return () => { unsubContent(); unsubMessages() }
+  }, [])
+
+  const save = async () => {
+    setSaving(true)
+    setStatus('')
+    try {
+      await saveContentRemote(draft)
+      setStatus('Saved & synced live ✓')
+    } catch (e) {
+      setStatus(`Save failed: ${(e as Error).message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const reset = async () => {
+    if (!confirm('Discard all admin edits and restore defaults in Firestore?')) return
+    setSaving(true)
+    setStatus('')
+    try {
+      await resetContentRemote()
+      setDraft(JSON.parse(JSON.stringify(defaultContent)))
+      setStatus('Reset to defaults ✓')
+    } catch (e) {
+      setStatus(`Reset failed: ${(e as Error).message}`)
+    } finally {
+      setSaving(false)
+    }
   }
   const exportJson = () => {
     const a = document.createElement('a')
@@ -107,14 +146,19 @@ function Panel() {
   return (
     <div className="mx-auto max-w-6xl overflow-x-hidden px-4 py-6 sm:py-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="pixel text-lg text-lime">ADMIN_</h1>
+        <div>
+          <h1 className="pixel text-lg text-lime">ADMIN_</h1>
+          <p className="mono text-xs text-muted">{user.email}</p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
-          {saved && <span role="status" className="text-sm text-lime">Saved ✓</span>}
+          {status && <span role="status" className={`text-sm ${status.includes('failed') || status.includes('error') ? 'text-orange' : 'text-lime'}`}>{status}</span>}
           <a href={import.meta.env.BASE_URL} className={`inline-flex items-center ${btn}`}>View site</a>
           <button className={btn} onClick={exportJson}>Export</button>
-          <button className={btn} onClick={reset}>Reset</button>
-          <button className={btn} onClick={() => { sessionStorage.removeItem(SESSION_KEY); location.reload() }}>Log out</button>
-          <button className="pixel-btn min-h-10 rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-black" onClick={save}>Save</button>
+          <button className={btn} disabled={saving} onClick={reset}>Reset</button>
+          <button className={btn} onClick={() => signOut(auth)}>Log out</button>
+          <button className="pixel-btn min-h-10 rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-black disabled:opacity-60" disabled={saving} onClick={save}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
         </div>
       </header>
 
@@ -135,7 +179,7 @@ function Panel() {
 
         <section aria-label={tab} className="min-w-0 space-y-4">
           {tab === 'Messages' && (
-            <Inbox messages={messages} onChange={(next) => { setMessages(next); saveMessages(next) }} />
+            <Inbox messages={messages} />
           )}
 
           {tab === 'Profile' && (
@@ -272,54 +316,70 @@ function Panel() {
               <textarea className={`${inputCls} mono h-72 sm:h-[28rem]`} spellCheck={false} aria-label="Raw JSON" value={json} onChange={(e) => setJson(e.target.value)} />
               {jsonErr && <p role="alert" className="text-sm text-orange">{jsonErr}</p>}
               <button className={btn} onClick={() => {
-                try { setDraft(JSON.parse(json)); setSaved(false); setJsonErr('Applied to draft. Press Save to publish.') }
+                try { setDraft(JSON.parse(json)); setStatus(''); setJsonErr('Applied to draft. Press Save to publish.') }
                 catch (e) { setJsonErr(`Invalid JSON: ${(e as Error).message}`) }
               }}>Apply JSON to draft</button>
             </div>
           )}
         </section>
       </div>
-      <p className="mono mt-10 text-xs text-muted">Changes are saved to this browser only (localStorage). Use Export and copy values into src/data/content.ts to make them permanent.</p>
+      <p className="mono mt-10 text-xs text-muted">Connected to Cloud Firestore (crown-portfolio-271828). Changes saved here sync to the main portfolio in real time.</p>
     </div>
   )
 }
 
-async function hash(s: string) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
-}
-
 export default function Admin() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1')
-  const [pass, setPass] = useState('')
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const [err, setErr] = useState('')
-  const hasPass = !!localStorage.getItem(PASS_KEY)
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!hasPass) {
-      if (pass.length < 4) return setErr('Use at least 4 characters.')
-      localStorage.setItem(PASS_KEY, await hash(pass))
-    } else if ((await hash(pass)) !== localStorage.getItem(PASS_KEY)) {
-      return setErr('Wrong passcode.')
-    }
-    sessionStorage.setItem(SESSION_KEY, '1'); setAuthed(true)
+  useEffect(() => onAuthStateChanged(auth, (u) => {
+    setUser(u)
+    setLoading(false)
+  }), [])
+
+  const login = async () => {
+    setErr('')
+    try { await signInWithPopup(auth, googleProvider) }
+    catch (e) { setErr((e as Error).message) }
   }
 
-  if (authed) return <Panel />
+  if (loading) {
+    return (
+      <main className="grid min-h-screen place-items-center px-4">
+        <p className="pixel text-sm text-lime">LOADING_</p>
+      </main>
+    )
+  }
+
+  if (user && user.email === ADMIN_EMAIL && user.emailVerified) {
+    return <Panel user={user} />
+  }
+
   return (
     <main className="grid min-h-screen place-items-center px-4">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-[24px] border border-white/10 bg-surface p-6">
+      <div className="w-full max-w-sm space-y-4 rounded-[24px] border border-white/10 bg-surface p-6">
         <h1 className="pixel text-lg text-lime">ADMIN_</h1>
-        <p className="text-sm text-muted">{hasPass ? 'Enter your passcode.' : 'First visit: choose a passcode for this browser.'}</p>
-        <label className="block text-sm sm:text-xs text-muted">
-          <span className="mb-1.5 block">Passcode</span>
-          <input type="password" autoFocus className={inputCls} value={pass} onChange={(e) => { setPass(e.target.value); setErr('') }} />
-        </label>
-        {err && <p role="alert" className="text-sm text-orange">{err}</p>}
-        <button className="pixel-btn min-h-10 w-full rounded-lg bg-lime py-2 text-sm font-semibold text-black">{hasPass ? 'Unlock' : 'Set passcode'}</button>
-        <p className="text-sm sm:text-xs text-muted">Frontend-only gate; not real security. <a className="text-lime underline" href={import.meta.env.BASE_URL}>Back to site</a></p>
-      </form>
+        {user ? (
+          <>
+            <p className="text-sm text-orange">Signed in as {user.email}, which is not authorized for admin access.</p>
+            <button type="button" onClick={() => signOut(auth)} className="pixel-btn min-h-10 w-full rounded-lg bg-lime py-2 text-sm font-semibold text-black">
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted">Sign in with your admin Google account ({ADMIN_EMAIL}) to manage portfolio content and messages in real time.</p>
+            {err && <p role="alert" className="text-sm text-orange">{err}</p>}
+            <button type="button" onClick={login} className="pixel-btn min-h-10 w-full rounded-lg bg-lime py-2 text-sm font-semibold text-black">
+              Sign in with Google
+            </button>
+          </>
+        )}
+        <p className="text-sm sm:text-xs text-muted">
+          Protected by Firebase Auth &amp; Firestore Security Rules. <a className="text-lime underline" href={import.meta.env.BASE_URL}>Back to site</a>
+        </p>
+      </div>
     </main>
   )
 }

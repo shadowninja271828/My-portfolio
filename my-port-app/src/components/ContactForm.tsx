@@ -90,7 +90,7 @@ export function ContactForm() {
     setErrors(e)
     if (Object.keys(e).length) return
     setStatus('submitting')
-    try { await send(v); addMessage(v); setStatus('success'); setV({ name: '', email: '', phone: '', whatsapp: '', budget: '', message: '' }) }
+    try { await addMessage(v); await send(v); setStatus('success'); setV({ name: '', email: '', phone: '', whatsapp: '', budget: '', message: '' }) }
     catch { setStatus('error') }
   }
 

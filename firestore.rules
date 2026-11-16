@@ -1,0 +1,134 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: site
+    // Document ID: content
+    // Fields (all required):
+    //   - name: string (<= 120 chars)
+    //   - role, eyebrow, typedName, shortBio, heroParagraph, photo,
+    //     heroVisual, stats, services, skills, projects, projectsLayout,
+    //     experience, education, testimonials, faq, budgetOptions,
+    //     socials, contactHeadline, whatsappBusiness, nav
+    // Access:
+    //   - Public `get` only (no collection listing).
+    //   - Admin-only `create` / `update`.
+    //   - `delete` denied.
+    //
+    // Collection: messages
+    // Document ID: {messageId} (auto-generated)
+    // Fields:
+    //   - name: string (required, 1..120 chars)
+    //   - email: string (required, 3..200 chars)
+    //   - phone: string (optional, <= 40 chars)
+    //   - whatsapp: string (optional, <= 40 chars)
+    //   - budget: string (required, <= 100 chars)
+    //   - message: string (required, 1..5000 chars)
+    //   - createdAt: timestamp (required, immutable)
+    //   - read: bool (required, must be false on create; only mutable field on update)
+    // Access:
+    //   - Public `create` (contact form submission) with strict schema & size validation.
+    //   - Admin-only `read`, `update` (only `read` bool), and `delete`.
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+             request.auth.token.email == 'shadowninja2.71828@gmail.com' &&
+             request.auth.token.email_verified == true;
+    }
+
+    function hasRequiredFields(data, fields) {
+      return data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(data, fields) {
+      return data.keys().hasOnly(fields);
+    }
+
+    function validStringLength(data, field, minLen, maxLen) {
+      return data[field] is string &&
+             data[field].size() >= minLen &&
+             data[field].size() <= maxLen;
+    }
+
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) ||
+             (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidSiteContent(data) {
+      return hasRequiredFields(data, [
+               'name', 'role', 'eyebrow', 'typedName', 'shortBio', 'heroParagraph',
+               'photo', 'heroVisual', 'stats', 'services', 'skills', 'projects',
+               'projectsLayout', 'experience', 'education', 'testimonials', 'faq',
+               'budgetOptions', 'socials', 'contactHeadline', 'whatsappBusiness', 'nav'
+             ]) &&
+             data.name is string &&
+             data.name.size() <= 120;
+    }
+
+    function isValidMessageCreate(data) {
+      return hasOnlyAllowedFields(data, [
+               'name', 'email', 'phone', 'whatsapp',
+               'budget', 'message', 'createdAt', 'read'
+             ]) &&
+             hasRequiredFields(data, [
+               'name', 'email', 'budget', 'message', 'createdAt', 'read'
+             ]) &&
+             validStringLength(data, 'name', 1, 120) &&
+             validStringLength(data, 'email', 3, 200) &&
+             isValidOptionalString(data, 'phone', 40) &&
+             isValidOptionalString(data, 'whatsapp', 40) &&
+             validStringLength(data, 'budget', 0, 100) &&
+             validStringLength(data, 'message', 1, 5000) &&
+             data.createdAt is timestamp &&
+             data.read == false;
+    }
+
+    function isValidMessageUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']) &&
+             request.resource.data.read is bool;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Default deny all reads and writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Public portfolio content (single document, admin-managed)
+    match /site/content {
+      allow get: if true;
+      allow create, update: if isAdmin() && isValidSiteContent(request.resource.data);
+      allow delete: if false;
+    }
+
+    // Contact form messages (public create, admin-only read/update/delete)
+    match /messages/{messageId} {
+      allow create: if isValidMessageCreate(request.resource.data);
+      allow read, delete: if isAdmin();
+      allow update: if isAdmin() && isValidMessageUpdate();
+    }
+  }
+}

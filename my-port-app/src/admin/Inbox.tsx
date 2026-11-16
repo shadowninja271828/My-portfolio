@@ -1,38 +1,41 @@
+import { useState } from 'react'
 import { content } from '../data/content'
-import type { Message } from '../data/messages'
+import {
+  addMessage,
+  clearAllMessages,
+  deleteMessage,
+  markAllMessagesRead,
+  setMessageRead,
+  type Message,
+} from '../data/messages'
 
-const btn = 'min-h-10 rounded-lg border border-white/20 px-3 py-2 text-sm hover:border-lime hover:text-lime'
+const btn = 'min-h-10 rounded-lg border border-white/20 px-3 py-2 text-sm hover:border-lime hover:text-lime disabled:opacity-50'
 
-export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (next: Message[]) => void }) {
+export function Inbox({ messages }: { messages: Message[] }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
   const unread = messages.filter((m) => !m.read).length
 
-  const addSample = () => {
-    const sample: Message = {
-      id: `sample-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      name: 'Alex Rivera',
-      email: 'alex.rivera@example.com',
-      phone: '+1 555 234 5678',
-      whatsapp: '+1 555 234 5678',
-      budget: content.budgetOptions[1] ?? '$1k - $5k',
-      message: "Hi Crown! I saw your React portfolio and would love to collaborate on a redesign for our web app's dashboard. Are you available next month?",
-      createdAt: new Date().toISOString(),
-      read: false,
-    }
-    onChange([sample, ...messages])
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true)
+    setErr('')
+    try { await fn() }
+    catch (e) { setErr((e as Error).message) }
+    finally { setBusy(false) }
   }
 
-  const toggleRead = (id: string) =>
-    onChange(messages.map((m) => (m.id === id ? { ...m, read: !m.read } : m)))
-
-  const remove = (id: string) =>
-    onChange(messages.filter((m) => m.id !== id))
-
-  const markAllRead = () =>
-    onChange(messages.map((m) => ({ ...m, read: true })))
+  const addSample = () => run(() => addMessage({
+    name: 'Alex Rivera',
+    email: 'alex.rivera@example.com',
+    phone: '+1 555 234 5678',
+    whatsapp: '+1 555 234 5678',
+    budget: content.budgetOptions[1] ?? '$1k - $5k',
+    message: "Hi Crown! I saw your React portfolio and would love to collaborate on a redesign for our web app's dashboard. Are you available next month?",
+  }))
 
   const clearAll = () => {
-    if (!confirm('Delete all messages?')) return
-    onChange([])
+    if (!confirm('Delete all messages from Firestore?')) return
+    void run(() => clearAllMessages(messages.map((m) => m.id)))
   }
 
   return (
@@ -43,15 +46,21 @@ export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (
           {unread > 0 && <> · <span className="font-semibold text-lime">{unread} unread</span></>}
         </p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className={btn} onClick={addSample}>+ Sample message</button>
-          {unread > 0 && <button type="button" className={btn} onClick={markAllRead}>Mark all read</button>}
-          {messages.length > 0 && <button type="button" className={btn} onClick={clearAll}>Clear all</button>}
+          <button type="button" disabled={busy} className={btn} onClick={addSample}>+ Sample message</button>
+          {unread > 0 && (
+            <button type="button" disabled={busy} className={btn} onClick={() => run(() => markAllMessagesRead(messages.filter((m) => !m.read).map((m) => m.id)))}>
+              Mark all read
+            </button>
+          )}
+          {messages.length > 0 && <button type="button" disabled={busy} className={btn} onClick={clearAll}>Clear all</button>}
         </div>
       </div>
 
+      {err && <p role="alert" className="rounded-xl border border-orange/40 bg-surface p-3 text-sm text-orange">{err}</p>}
+
       {messages.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-surface p-6 text-center text-sm text-muted">
-          No messages yet. Submissions from the contact form are saved locally in this browser until a backend is connected.
+          No messages yet. Submissions from the contact form sync here in real time via Cloud Firestore.
         </div>
       ) : (
         <ul className="space-y-3">
@@ -82,10 +91,10 @@ export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (
                   <p className="mono text-xs text-muted">{new Date(m.createdAt).toLocaleString()}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" className={btn} onClick={() => toggleRead(m.id)}>
+                  <button type="button" disabled={busy} className={btn} onClick={() => run(() => setMessageRead(m.id, !m.read))}>
                     {m.read ? 'Mark unread' : 'Mark read'}
                   </button>
-                  <button type="button" className={btn} onClick={() => remove(m.id)}>Delete</button>
+                  <button type="button" disabled={busy} className={btn} onClick={() => run(() => deleteMessage(m.id))}>Delete</button>
                 </div>
               </div>
               <p className="whitespace-pre-wrap break-words rounded-xl bg-surface-2 p-3 text-sm text-white/90">{m.message}</p>

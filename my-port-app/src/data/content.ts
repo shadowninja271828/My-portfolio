@@ -1,3 +1,6 @@
+import { doc, onSnapshot, setDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
+
 // Single source of truth for ALL site copy.
 // Anything starting with "TODO" is a placeholder; in dev it renders with a visible marker.
 
@@ -101,19 +104,48 @@ export const asset = (p: string) =>
 
 export const isTodo = (s: string) => s.includes('TODO')
 
-// ---- Admin overrides (frontend only, persisted in localStorage) ----
+// ---- Admin overrides (Firestore real-time + localStorage cache) ----
 export type Content = typeof content
 export const defaultContent: Content = JSON.parse(JSON.stringify(content))
 const KEY = 'crown-content'
+const CONTENT_DOC = doc(db, 'site', 'content')
 
 export function saveContent(next: Content) {
   localStorage.setItem(KEY, JSON.stringify(next))
   Object.assign(content, next)
 }
+
+export async function saveContentRemote(next: Content) {
+  saveContent(next)
+  await setDoc(CONTENT_DOC, JSON.parse(JSON.stringify(next)))
+}
+
 export function resetContent() {
   localStorage.removeItem(KEY)
   Object.assign(content, JSON.parse(JSON.stringify(defaultContent)))
 }
+
+export async function resetContentRemote() {
+  resetContent()
+  await setDoc(CONTENT_DOC, JSON.parse(JSON.stringify(defaultContent)))
+}
+
+export function subscribeContent(onChange: (next: Content) => void): () => void {
+  return onSnapshot(
+    CONTENT_DOC,
+    (snap) => {
+      if (!snap.exists()) return
+      const data = snap.data() as Partial<Content>
+      const merged = { ...JSON.parse(JSON.stringify(defaultContent)), ...data } as Content
+      saveContent(merged)
+      onChange(merged)
+    },
+    (err) => {
+      console.warn('[content] Firestore listener error:', err.message)
+    },
+  )
+}
+
 try {
   const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(KEY) : null
   if (raw) Object.assign(content, JSON.parse(raw))

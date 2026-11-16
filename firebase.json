@@ -1,0 +1,18 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Crown Portfolio",
+        "supportEmail": "shadowninja2.71828@gmail.com",
+        "authorizedRedirectUris": [
+          "https://crown-portfolio-271828.firebaseapp.com/__/auth/handler",
+          "https://shadowninja271828.github.io/My-portfolio/admin",
+          "http://localhost:5173/admin"
+        ]
+      }
+    }
+  }
+}

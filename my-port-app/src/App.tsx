@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { content } from './data/content'
+import { useEffect, useState, type ReactNode } from 'react'
+import { content, subscribeContent } from './data/content'
 import { BentoGrid } from './components/BentoGrid'
 import { ContactForm } from './components/ContactForm'
 import { Faq, Testimonials } from './components/Extras'
@@ -25,6 +25,9 @@ function Section({ id, index, title, children }: { id: string; index: string; ti
 }
 
 export default function App() {
+  const [, setTick] = useState(0)
+  useEffect(() => subscribeContent(() => setTick((t) => t + 1)), [])
+
   const hasExp = content.experience.length > 0
   const hasEdu = content.education.length > 0
   const hasProjects = content.projects.length > 0
