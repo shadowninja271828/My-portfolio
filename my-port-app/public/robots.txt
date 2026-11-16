@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /My-portfolio/
+Disallow: /My-portfolio/admin
+
+Sitemap: https://shadowninja271828.github.io/My-portfolio/sitemap.xml

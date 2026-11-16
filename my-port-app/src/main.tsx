@@ -10,6 +10,11 @@ import App from './App'
 
 const Admin = lazy(() => import('./admin/Admin'))
 const isAdmin = /\/admin\/?$/.test(window.location.pathname)
+if (isAdmin) {
+  document.title = 'Admin | Crown'
+  const robots = document.querySelector('meta[name="robots"]')
+  if (robots) robots.setAttribute('content', 'noindex, nofollow')
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
