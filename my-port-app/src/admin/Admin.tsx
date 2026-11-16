@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { content, defaultContent, resetContent, saveContent, type Content } from '../data/content'
+import { asset, content, defaultContent, resetContent, saveContent, type Content } from '../data/content'
 
 // FRONTEND-ONLY admin. The passcode gate is a convenience, NOT security:
 // everything lives in this browser's localStorage and anyone can read the bundle.
@@ -40,7 +40,7 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
     <div className="text-xs text-muted">
       <Field label={`${label} (URL or upload)`} value={value.startsWith('data:') ? '(uploaded image)' : value} onChange={onChange} />
       <input type="file" accept="image/*" className="mt-2 block text-xs" aria-label={`Upload ${label}`} onChange={(e) => pick(e.target.files?.[0])} />
-      {value && <img src={value} alt="" className="mt-2 h-20 rounded object-cover" />}
+      {value && <img src={asset(value)} alt="" className="mt-2 h-20 rounded object-cover" />}
     </div>
   )
 }
@@ -106,7 +106,7 @@ function Panel() {
         <h1 className="pixel text-lg text-lime">ADMIN_</h1>
         <div className="flex flex-wrap items-center gap-2">
           {saved && <span role="status" className="text-sm text-lime">Saved ✓</span>}
-          <a href="/" className={btn}>View site</a>
+          <a href={import.meta.env.BASE_URL} className={btn}>View site</a>
           <button className={btn} onClick={exportJson}>Export</button>
           <button className={btn} onClick={reset}>Reset</button>
           <button className={btn} onClick={() => { sessionStorage.removeItem(SESSION_KEY); location.reload() }}>Log out</button>
@@ -307,7 +307,7 @@ export default function Admin() {
         </label>
         {err && <p role="alert" className="text-sm text-orange">{err}</p>}
         <button className="pixel-btn w-full rounded-lg bg-lime py-2 text-sm font-semibold text-black">{hasPass ? 'Unlock' : 'Set passcode'}</button>
-        <p className="text-xs text-muted">Frontend-only gate; not real security. <a className="text-lime underline" href="/">Back to site</a></p>
+        <p className="text-xs text-muted">Frontend-only gate; not real security. <a className="text-lime underline" href={import.meta.env.BASE_URL}>Back to site</a></p>
       </form>
     </main>
   )

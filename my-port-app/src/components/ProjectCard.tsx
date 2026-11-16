@@ -1,5 +1,5 @@
 import { ExternalLink, GitBranch } from 'lucide-react'
-import type { Project } from '../data/content'
+import { asset, type Project } from '../data/content'
 import { T } from './Todo'
 import { WindowFrame } from './WindowFrame'
 
@@ -8,7 +8,7 @@ export function ProjectCard({ project: p }: { project: Project }) {
     <article className="group flex h-full flex-col rounded-[24px] border border-white/10 bg-surface p-3 transition-all duration-300 hover:-translate-y-1 hover:border-lime hover:shadow-[0_0_24px_rgba(198,255,61,0.25)] motion-reduce:hover:translate-y-0">
       <WindowFrame title={p.title}>
         {p.image ? (
-          <img src={p.image} alt={`Screenshot of ${p.title}`} width={1280} height={800} loading="lazy" className="size-full object-cover" />
+          <img src={asset(p.image)} alt={`Screenshot of ${p.title}`} width={1280} height={800} loading="lazy" className="size-full object-cover" />
         ) : (
           <div className="pixel grid size-full place-items-center text-xs text-muted">IMAGE 16:10</div>
         )}

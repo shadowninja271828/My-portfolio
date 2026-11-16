@@ -95,6 +95,9 @@ export const content = {
   ],
 }
 
+export const asset = (p: string) =>
+  p.startsWith('/') && !p.startsWith('//') ? import.meta.env.BASE_URL + p.slice(1) : p
+
 export const isTodo = (s: string) => s.includes('TODO')
 
 // ---- Admin overrides (frontend only, persisted in localStorage) ----

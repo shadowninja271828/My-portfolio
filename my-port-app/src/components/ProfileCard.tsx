@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Flame } from 'lucide-react'
 import { useState } from 'react'
-import { content } from '../data/content'
+import { asset, content } from '../data/content'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import { Socials } from './Socials'
 import { T } from './Todo'
@@ -22,7 +22,7 @@ export function ProfileCard() {
           </svg>
           <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-orange">
             {imgOk ? (
-              <img src={content.photo} alt={`Portrait of ${content.name}`} width={600} height={800}
+              <img src={asset(content.photo)} alt={`Portrait of ${content.name}`} width={600} height={800}
                    onError={() => setImgOk(false)} className="size-full object-cover" />
             ) : (
               <div className="pixel grid size-full place-items-center text-center text-xs text-black/70">PHOTO<br />PLACEHOLDER</div>

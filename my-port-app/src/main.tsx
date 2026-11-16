@@ -9,7 +9,7 @@ import './index.css'
 import App from './App'
 
 const Admin = lazy(() => import('./admin/Admin'))
-const isAdmin = /^\/admin(\/|$)/.test(window.location.pathname)
+const isAdmin = /\/admin\/?$/.test(window.location.pathname)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
