@@ -28,8 +28,8 @@ export const content = {
   role: ['REACT', 'DEVELOPER'] as [string, string],
   eyebrow: "Hi, I'm",
   typedName: 'CROWN_',
-  shortBio: 'TODO_BIO: one sentence about Crown.',
-  heroParagraph: 'TODO_BIO: two to three lines about what Crown builds and who Crown builds it for.',
+  shortBio: 'Frontend engineer crafting fast, interactive React interfaces with pixel-level precision.',
+  heroParagraph: 'I design and build high-craft React applications—combining clean component architecture, purposeful motion, and snappy performance for products that feel effortless to use.',
   photo: '/assets/crown.jpg', // placeholder until supplied (3:4 portrait)
   heroVisual: 'pixelScene' as 'pixelScene' | 'none',
 
