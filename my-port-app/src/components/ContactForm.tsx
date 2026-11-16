@@ -20,7 +20,12 @@ async function send(data: Record<string, string>): Promise<void> {
   if (env.VITE_EMAILJS_SERVICE && env.VITE_EMAILJS_TEMPLATE && env.VITE_EMAILJS_KEY) {
     const r = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ service_id: env.VITE_EMAILJS_SERVICE, template_id: env.VITE_EMAILJS_TEMPLATE, user_id: env.VITE_EMAILJS_KEY, template_params: data }),
+      body: JSON.stringify({
+        service_id: env.VITE_EMAILJS_SERVICE,
+        template_id: env.VITE_EMAILJS_TEMPLATE,
+        user_id: env.VITE_EMAILJS_KEY,
+        template_params: { ...data, to_email: 'crowncraftdev@gmail.com', reply_to: data.email },
+      }),
     })
     if (!r.ok) throw new Error('emailjs')
     return

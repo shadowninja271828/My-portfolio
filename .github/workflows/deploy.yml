@@ -29,6 +29,10 @@ jobs:
           cache-dependency-path: my-port-app/package-lock.json
       - run: npm ci
       - run: npm run build
+        env:
+          VITE_EMAILJS_SERVICE: ${{ secrets.VITE_EMAILJS_SERVICE }}
+          VITE_EMAILJS_TEMPLATE: ${{ secrets.VITE_EMAILJS_TEMPLATE }}
+          VITE_EMAILJS_KEY: ${{ secrets.VITE_EMAILJS_KEY }}
       # Pages has no SPA fallback for project subpaths; create 404.html and admin/index.html.
       - run: cp dist/index.html dist/404.html && mkdir -p dist/admin && cp dist/index.html dist/admin/index.html
       - uses: actions/upload-pages-artifact@v3
