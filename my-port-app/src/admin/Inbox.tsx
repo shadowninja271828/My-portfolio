@@ -11,6 +11,8 @@ export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (
       id: `sample-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: 'Alex Rivera',
       email: 'alex.rivera@example.com',
+      phone: '+1 555 234 5678',
+      whatsapp: '+1 555 234 5678',
       budget: content.budgetOptions[1] ?? '$1k - $5k',
       message: "Hi Crown! I saw your React portfolio and would love to collaborate on a redesign for our web app's dashboard. Are you available next month?",
       createdAt: new Date().toISOString(),
@@ -63,6 +65,20 @@ export function Inbox({ messages, onChange }: { messages: Message[]; onChange: (
                     {m.budget && <span className="mono rounded-full border border-white/15 px-2 py-0.5 text-xs text-white/80">{m.budget}</span>}
                   </div>
                   <a href={`mailto:${m.email}`} className="block break-all text-sm text-lime hover:underline">{m.email}</a>
+                  {(m.phone || m.whatsapp) && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                      {m.phone && (
+                        <a href={`tel:${m.phone.replace(/[^\d+]/g, '')}`} className="text-white/90 hover:text-lime hover:underline">
+                          Phone: {m.phone}
+                        </a>
+                      )}
+                      {m.whatsapp && (
+                        <a href={`https://wa.me/${m.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer noopener" className="text-lime hover:underline">
+                          WhatsApp: {m.whatsapp}
+                        </a>
+                      )}
+                    </div>
+                  )}
                   <p className="mono text-xs text-muted">{new Date(m.createdAt).toLocaleString()}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">

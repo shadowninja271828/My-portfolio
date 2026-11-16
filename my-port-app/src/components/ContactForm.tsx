@@ -71,7 +71,7 @@ const input = 'min-h-12 w-full rounded-xl bg-surface-2 px-4 text-sm text-white p
 
 export function ContactForm() {
   const uid = useId()
-  const [v, setV] = useState({ name: '', email: '', budget: '', message: '' })
+  const [v, setV] = useState({ name: '', email: '', phone: '', whatsapp: '', budget: '', message: '' })
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<Status>('idle')
 
@@ -90,7 +90,7 @@ export function ContactForm() {
     setErrors(e)
     if (Object.keys(e).length) return
     setStatus('submitting')
-    try { await send(v); addMessage(v); setStatus('success'); setV({ name: '', email: '', budget: '', message: '' }) }
+    try { await send(v); addMessage(v); setStatus('success'); setV({ name: '', email: '', phone: '', whatsapp: '', budget: '', message: '' }) }
     catch { setStatus('error') }
   }
 
@@ -117,6 +117,16 @@ export function ContactForm() {
             <input id={`${uid}e`} type="email" className={input} placeholder="you@example.com" autoComplete="email" value={v.email} aria-invalid={!!errors.email} aria-describedby={errors.email ? `${uid}e-e` : undefined}
               onChange={(e) => setV({ ...v, email: e.target.value })} disabled={status === 'submitting'} />
             {err(`${uid}e`, errors.email)}
+          </div>
+          <div>
+            <label htmlFor={`${uid}p`} className="mb-2 block text-sm font-medium">Contact number <span className="text-muted">(optional)</span></label>
+            <input id={`${uid}p`} type="tel" className={input} placeholder="+1 555 123 4567" autoComplete="tel" value={v.phone}
+              onChange={(e) => setV({ ...v, phone: e.target.value })} disabled={status === 'submitting'} />
+          </div>
+          <div>
+            <label htmlFor={`${uid}w`} className="mb-2 block text-sm font-medium">WhatsApp number <span className="text-muted">(optional)</span></label>
+            <input id={`${uid}w`} type="tel" className={input} placeholder="+1 555 123 4567" autoComplete="tel" value={v.whatsapp}
+              onChange={(e) => setV({ ...v, whatsapp: e.target.value })} disabled={status === 'submitting'} />
           </div>
           <div className="md:col-span-2">
             <Select id={`${uid}b`} label="Budget" options={content.budgetOptions} value={v.budget} onChange={(b) => setV({ ...v, budget: b })} />
